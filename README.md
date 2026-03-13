@@ -23,6 +23,6 @@ where\
 
 Flags should be specified before numerical arguments.
 
-Data are written a directory named ./RESULTS/Nmax=`N`_resampleSize=20000_k=`k`_s=`s`_l=`l`_p=`p`_q=`q`_nsequence=`n<sup>1</sup>_n~2~_n~3~...`_msequence=`m~1~_m~2~_m~3~...`_seed=`x`/n=`n~i~`_m=`m~i~`_tissue.csv
+Data are written a directory named ./RESULTS/Nmax=`N`_resampleSize=20000_k=`k`_s=`s`_l=`l`_p=`p`_q=`q`_nsequence=`n1_n2_n3...`_msequence=`m1_m2_m3...`_seed=`x`/n=`ni`_m=`mi`_tissue.csv
 
-where `n~1~_n~2~_n~3~...` and `m~1~_m~2~_m~3~...` are the sequences of n and m values specified in the `nm_pairs` vector, and 
+where `n1_n2_n3...` and `m1_m2_m3...` are the sequences of n and m values specified in the `nm_pairs` vector, and `ni` and `mi` are the `n` and `m` values of the serial passage to which the data relates.
