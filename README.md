@@ -22,3 +22,5 @@ where\
 &nbsp; -x &emsp;&emsp; random seed
 
 Flags should be specified before numerical arguments.
+
+Data are written a directory named ./RESULTS/Nmax=`N`_resampleSize=20000_k=`k`_s=`s`_l=`l`_p=`p`_q=`q`_nsequence=`n1_n2_n3...`_msequence=`m1_m2_m3...`_seed=`x`/n=`n`_m=`m`_tissue.csv
