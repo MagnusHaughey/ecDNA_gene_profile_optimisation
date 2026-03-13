@@ -27,14 +27,14 @@ def reformat(input):
 
 
 # Define all sequences of parameter A that were simulated, to make sure that only related data are plotted
-all_A_sequences = [[20 , 30 , 40 , 60 , 80 , 100]]
+all_n_sequences = [[5 , 10 , 15 , 25 , 40 , 60]]  # <-- edit this as necessary
 
 
-for fitness_function_sequence in all_A_sequences:
+for fitness_function_sequence in all_n_sequences:
 
 
 	# First, find list of all parameter combinations from ./RESULTS/ directory 
-	fitness_function_string = "./RESULTS/*Asequence="
+	fitness_function_string = "./RESULTS/*nsequence="
 	for val in fitness_function_sequence:
 		fitness_function_string += "{}_".format(val)
 	fitness_function_string += "*/"
@@ -63,13 +63,13 @@ for fitness_function_sequence in all_A_sequences:
 
 		k_detected = [int(word.split("=")[-1]) for word in param_combo_split if ("k=" in word)][0]
 		s_detected = [float(word.split("=")[-1]) for word in param_combo_split if ("s=" in word)][0]
-		C_detected = [float(word.split("=")[-1]) for word in param_combo_split if ("C=" in word)][0]
+		l_detected = [float(word.split("=")[-1]) for word in param_combo_split if ("l=" in word)][0]
 		p_detected = [float(word.split("=")[-1]) for word in param_combo_split if ("p=" in word)][0]
 		q_detected = [float(word.split("=")[-1][:-1]) if (word[-1] == "/") else float(word.split("=")[-1]) for word in param_combo_split if ("q=" in word)][0]
 
-		b_sequence_detected = param_combo.split("Bsequence=")[-1]
-		b_sequence_detected = b_sequence_detected.split("_seed")[0]
-		b_sequence_detected = b_sequence_detected.split("_")
+		m_sequence_detected = param_combo.split("msequence=")[-1]
+		m_sequence_detected = m_sequence_detected.split("_seed")[0]
+		m_sequence_detected = m_sequence_detected.split("_")
 
 
 		for file in all_files:
@@ -79,9 +79,9 @@ for fitness_function_sequence in all_A_sequences:
 			# Get patient seed from file path
 			seed = [int(word.split("=")[-1]) for word in file.split('/') if "seed" in word][0]
 
-			# Get A and B from file path 
-			A_detected = [int(word.split("=")[-1]) for word in file.split("_") if ("A=" in word)][0]
-			B_detected = [int(word.split("=")[-1]) for word in file.split("_") if ("B=" in word)][0]
+			# Get n and m from file path 
+			n_detected = [int(word.split("=")[-1]) for word in file.split("_") if ("n=" in word)][0]
+			m_detected = [int(word.split("=")[-1]) for word in file.split("_") if ("m=" in word)][0]
 
 
 			# List for pseudo-bulked cells
@@ -95,7 +95,7 @@ for fitness_function_sequence in all_A_sequences:
 				# Sub-sample e.g. 100 cells and count ecDNA copy number in each 
 				id_pass_filter = np.random.choice(np.arange(len(data)) , size = np.min([10 , len(data)]) , replace = False)
 				for i in id_pass_filter:
-					copyNumbers.append([A_detected , len(reformat(data[i]))])
+					copyNumbers.append([n_detected , len(reformat(data[i]))])
 
 
 				if (len(data) == 0):
@@ -118,7 +118,7 @@ for fitness_function_sequence in all_A_sequences:
 					gene_B_CopyNumber = np.sum([ec.count("B") for ec in cell_ecDNA])
 
 
-					per_colony_data.append([k_detected , s_detected , A_detected , B_detected , C_detected , p_detected , q_detected , seed , colocalization , gene_A_CopyNumber , gene_B_CopyNumber])
+					per_colony_data.append([k_detected , s_detected , n_detected , m_detected , l_detected , p_detected , q_detected , seed , colocalization , gene_A_CopyNumber , gene_B_CopyNumber])
 
 
 
@@ -127,8 +127,8 @@ for fitness_function_sequence in all_A_sequences:
 
 
 		# Wrap all data into a dataframe
-		per_colony_data_df = pd.DataFrame(per_colony_data , columns = ['k' , 's' , 'A' , 'B' , 'C' , 'p' , 'q' , 'seed' , 'Colocalization' , 'Gene A copy number' , 'Gene B copy number'])
-		copyNumbers_df = pd.DataFrame(copyNumbers , columns = ['A' , 'Copy number'])
+		per_colony_data_df = pd.DataFrame(per_colony_data , columns = ['k' , 's' , 'n' , 'm' , 'l' , 'p' , 'q' , 'seed' , 'Colocalization' , 'Gene A copy number' , 'Gene B copy number'])
+		copyNumbers_df = pd.DataFrame(copyNumbers , columns = ['n' , 'Copy number'])
 
 
 
@@ -137,14 +137,14 @@ for fitness_function_sequence in all_A_sequences:
 		plt.close()
 		plt.subplots(figsize = (1+(0.5*len(fitness_function_sequence)),4.4))
 		sns.boxplot(data = per_colony_data_df ,
-				x = "A" ,
+				x = "n" ,
 				y = "Colocalization" ,
 				color = "#57ba96" ,
 				order = fitness_function_sequence ,
 				showfliers = False)
 
 		sns.stripplot(data = per_colony_data_df ,
-				x = "A" ,
+				x = "n" ,
 				y = "Colocalization" ,
 				color = "#0d6b49" ,
 				edgecolor = "#4f4f4f" ,
@@ -155,7 +155,11 @@ for fitness_function_sequence in all_A_sequences:
 
 		plt.ylim([-5 , 105])
 
+		plt.xlabel(r"($\mu$, $\nu$)" , fontsize = 15)
 		plt.ylabel("Colocalization (%)" , fontsize = 15) 
+
+		xtick_locations , _ = plt.xticks()
+		plt.xticks(ticks = xtick_locations , labels = ["({},{})".format(n, m) for n, m in zip(fitness_function_sequence , m_sequence_detected)] , rotation = 45 , ha = 'right')
 
 		plt.tick_params(labelsize = 12 , width = 2.2)
 		plt.tick_params(which = 'minor' , width = 2.2)
@@ -166,8 +170,6 @@ for fitness_function_sequence in all_A_sequences:
 
 		plt.tight_layout()
 
-
-		param_list = [word for word in param_combo.split("/") if ("Nmax" in word)][0]
 
 		Path("PLOTS").mkdir(parents = True , exist_ok = True)
 		outFile = param_combo.replace("RESULTS" , "PLOTS") + "_colocalization.png"
@@ -186,14 +188,14 @@ for fitness_function_sequence in all_A_sequences:
 		plt.close()
 		plt.subplots(figsize = (1+(0.5*len(fitness_function_sequence)),4.4))
 		sns.boxplot(data = copyNumbers_df ,
-				x = "A" ,
+				x = "n" ,
 				y = "Copy number" ,
 				color = "#b536b3" ,
 				order = fitness_function_sequence ,
 				showfliers = False)
 
 		sns.stripplot(data = copyNumbers_df ,
-				x = "A" ,
+				x = "n" ,
 				y = "Copy number" ,
 				color = "#780276" ,
 				edgecolor = "#4f4f4f" ,
@@ -202,8 +204,11 @@ for fitness_function_sequence in all_A_sequences:
 				size = 5 )
 
 
-
+		plt.xlabel(r"($\mu$, $\nu$)" , fontsize = 15)
 		plt.ylabel("Mean copy number" , fontsize = 15) 
+
+		xtick_locations , _ = plt.xticks()
+		plt.xticks(ticks = xtick_locations , labels = ["({},{})".format(n, m) for n, m in zip(fitness_function_sequence , m_sequence_detected)] , rotation = 45 , ha = 'right')
 
 		plt.tick_params(labelsize = 12 , width = 2.2)
 		plt.tick_params(which = 'minor' , width = 2.2)
@@ -214,8 +219,6 @@ for fitness_function_sequence in all_A_sequences:
 
 		plt.tight_layout()
 
-
-		param_list = [word for word in param_combo.split("/") if ("Nmax" in word)][0]
 
 		Path("PLOTS").mkdir(parents = True , exist_ok = True)
 		outFile = param_combo.replace("RESULTS" , "PLOTS") + "_meanCopyNumber.png"
@@ -264,11 +267,11 @@ for fitness_function_sequence in all_A_sequences:
 		toPlot_y = []
 		for i in range(len(fitness_function_sequence)):
 
-			a_value = sorted(fitness_function_sequence)[i]
-			b_value = b_sequence_detected[i]
+			n_value = sorted(fitness_function_sequence)[i]
+			m_value = m_sequence_detected[i]
 
-			all_gene_A_copyNumbers = per_colony_data_df[per_colony_data_df['A'] == a_value]["Gene A copy number"].to_list()
-			all_gene_B_copyNumbers = per_colony_data_df[per_colony_data_df['A'] == a_value]["Gene B copy number"].to_list()
+			all_gene_A_copyNumbers = per_colony_data_df[per_colony_data_df['n'] == n_value]["Gene A copy number"].to_list()
+			all_gene_B_copyNumbers = per_colony_data_df[per_colony_data_df['n'] == n_value]["Gene B copy number"].to_list()
 
 			mean_A = np.mean(all_gene_A_copyNumbers) if len(all_gene_A_copyNumbers) > 0 else 0
 			mean_B = np.mean(all_gene_B_copyNumbers) if len(all_gene_B_copyNumbers) > 0 else 0
@@ -280,37 +283,37 @@ for fitness_function_sequence in all_A_sequences:
 
 
 			# Plot
-			axes[axes_map[a_value]].plot(toPlot_x , toPlot_y , lw = 3 , color = "black")
+			axes[axes_map[n_value]].plot(toPlot_x , toPlot_y , lw = 3 , color = "black")
 
 			
 			# Highlight gene A and B region in colour
-			if (a_value == sorted(fitness_function_sequence)[0]):
-				axes[axes_map[a_value]].plot([1.25 , 1.75] , [mean_A , mean_A] , lw = 6 , color = "#f24324" , label = "Oncogene")
-				axes[axes_map[a_value]].plot([2.25 , 2.75] , [mean_B , mean_B] , lw = 6 , color = "#6624f2" , label = "Passenger")
+			if (n_value == sorted(fitness_function_sequence)[0]):
+				axes[axes_map[n_value]].plot([1.25 , 1.75] , [mean_A , mean_A] , lw = 6 , color = "#f24324" , label = "Oncogene")
+				axes[axes_map[n_value]].plot([2.25 , 2.75] , [mean_B , mean_B] , lw = 6 , color = "#6624f2" , label = "Passenger")
 			else:
-				axes[axes_map[a_value]].plot([1.25 , 1.75] , [mean_A , mean_A] , lw = 6 , color = "#f24324")
-				axes[axes_map[a_value]].plot([2.25 , 2.75] , [mean_B , mean_B] , lw = 6 , color = "#6624f2")
+				axes[axes_map[n_value]].plot([1.25 , 1.75] , [mean_A , mean_A] , lw = 6 , color = "#f24324")
+				axes[axes_map[n_value]].plot([2.25 , 2.75] , [mean_B , mean_B] , lw = 6 , color = "#6624f2")
 
 
 			# Plot error bars on mean gene copy numbers
 			A_errs = [[std_A if (mean_A - std_A) >= 0 else mean_A] , [std_A]]
 			B_errs = [[std_B if (mean_B - std_B) >= 0 else mean_B] , [std_B]]
  
-			axes[axes_map[a_value]].errorbar(1.5 , mean_A , yerr = A_errs , xerr = None , ecolor = "#a61900" , elinewidth = 2 , capsize = 2 , capthick = 2 , zorder = -10)
-			axes[axes_map[a_value]].errorbar(2.5 , mean_B , yerr = B_errs , xerr = None , ecolor = "#3c04b5" , elinewidth = 2 , capsize = 2 , capthick = 2 , zorder = -10)
+			axes[axes_map[n_value]].errorbar(1.5 , mean_A , yerr = A_errs , xerr = None , ecolor = "#a61900" , elinewidth = 2 , capsize = 2 , capthick = 2 , zorder = -10)
+			axes[axes_map[n_value]].errorbar(2.5 , mean_B , yerr = B_errs , xerr = None , ecolor = "#3c04b5" , elinewidth = 2 , capsize = 2 , capthick = 2 , zorder = -10)
 
 
 			# Formatting
-			axes[axes_map[a_value]].spines[['right', 'top']].set_visible(False)
+			axes[axes_map[n_value]].spines[['right', 'top']].set_visible(False)
 			for axis in ['bottom','left']:
-				axes[axes_map[a_value]].spines[axis].set_linewidth(2.2)
+				axes[axes_map[n_value]].spines[axis].set_linewidth(2.2)
 
-			axes[axes_map[a_value]].set_xlabel(None)
+			axes[axes_map[n_value]].set_xlabel(None)
 			
-			axes[axes_map[a_value]].tick_params(axis = 'x' , which = 'both' , bottom = False , labelbottom = False)
-			axes[axes_map[a_value]].tick_params(axis = 'y' , which = 'both' , width = 2.2)
+			axes[axes_map[n_value]].tick_params(axis = 'x' , which = 'both' , bottom = False , labelbottom = False)
+			axes[axes_map[n_value]].tick_params(axis = 'y' , which = 'both' , width = 2.2)
 
-			axes[axes_map[a_value]].set_title("A={}, B={}".format(a_value, b_value) , pad = 15)
+			axes[axes_map[n_value]].set_title("A={}, B={}".format(n_value, m_value) , pad = 15)
 
 
 
@@ -324,10 +327,6 @@ for fitness_function_sequence in all_A_sequences:
 		axes["A"].tick_params(axis = 'y' , which = 'both' , width = 2.2 , labelsize = 15)
 
 
-
-		# labels = plt.gca().get_xticklabels()
-		# plt.gca().set_xticks([word.get_position()[0] for word in labels])
-		# plt.gca().set_xticklabels([word.get_text().replace(" copy number" , "") for word in labels])
 
 		plt.tight_layout()
 		plt.subplots_adjust(wspace = 0.5)
