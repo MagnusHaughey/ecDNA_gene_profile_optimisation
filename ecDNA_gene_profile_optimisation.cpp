@@ -106,9 +106,6 @@ class Cell
 				this->division_rate = (1.0 + (x1 * x2 * (pow(x3 , x4)))) * base_rate;
 			}
 
-			// Constant selection function
-			// if (ec.size() == 0) this->division_rate = 1.0;
-			// else this->division_rate = 1.0 + selection_coeff;
 		}
 
 
@@ -116,7 +113,7 @@ class Cell
 		{
 			base_rate = log(2.0);		// Corresponds to a doubling time of 1 day
 
-			// Base death rate varies between 0.5->1.0 times the cell's birth rate, depending on total ecDNA burden
+			// Base death rate varies depending on total ecDNA burden
 			ec_length_sum = 0.0;
 			for (int i = 0; i < ec.size(); ++i) ec_length_sum += (double)ec[i].size();
 
@@ -242,28 +239,11 @@ void cell_division(vector<Cell> &tissue , double *total_unnormalised_division_ra
 		if (rand_double <= cumulative_division_rate/(*total_unnormalised_division_rate))
 		{
 
-			// cout << "\n\n" << endl;
-
-			// cout << "Mother cell ecDNA (pre-ecDNA replication): ";
-			// for (int j = 0; j < tissue[i].ecDNA.size(); ++j)
-			// {
-			// 	cout << tissue[i].ecDNA[j] << ", ";
-			// }
-			// cout << endl;
-
 
 			// mother_ec is a full, explicit list of ecDNA in the mother cell after ecDNA replication
 			mother_ec.clear();
 			mother_ec.insert(mother_ec.begin(), tissue[i].ecDNA.begin(), tissue[i].ecDNA.end() );
 			mother_ec.insert(mother_ec.begin(), tissue[i].ecDNA.begin(), tissue[i].ecDNA.end() );
-
-
-			// cout << "Mother cell ecDNA (post-ecDNA replication): ";
-			// for (int j = 0; j < mother_ec.size(); ++j)
-			// {
-			// 	cout << mother_ec[j] << ", ";
-			// }
-			// cout << endl;
 
 
 
@@ -297,14 +277,6 @@ void cell_division(vector<Cell> &tissue , double *total_unnormalised_division_ra
 			}
 
 
-			// cout << "Mother cell ecDNA (after fusion): ";
-			// for (int j = 0; j < mother_ec_postFusion.size(); ++j)
-			// {
-			// 	cout << mother_ec_postFusion[j] << ", ";
-			// }
-			// cout << endl;
-
-
 			// Fission
 			vector<string> mother_ec_postFissionAndFusion;
 			for (int j = 0; j < mother_ec_postFusion.size(); ++j)
@@ -336,16 +308,6 @@ void cell_division(vector<Cell> &tissue , double *total_unnormalised_division_ra
 				// Sort partition indices in ascending order
 				sort(partition_indices.begin(), partition_indices.end());
 
-				// if (partition_indices.size() > 0)
-				// {
-				// 	cout << "Partition indices: ";
-				// 	for (int j = 0; j < partition_indices.size(); ++j)
-				// 	{
-				// 		cout << partition_indices[j] << endl;
-				// 	}
-				// }
-
-
 
 				partition_start = 0;
 				for (int k = 0; k < partition_indices.size(); ++k)
@@ -374,96 +336,6 @@ void cell_division(vector<Cell> &tissue , double *total_unnormalised_division_ra
 
 			}
 
-
-
-
-
-
-
-
-			// // Fission (no prior fusion)
-			// vector<string> mother_ec_postFissionAndFusion;
-			// for (int j = 0; j < mother_ec.size(); ++j)
-			// {
-
-			// 	// number of breaks in ecDNA is proportional to its length
-			// 	binomial_distribution<int> draw_ecDNA_fission_number(mother_ec[j].size()-1 , fission_probability);
-			// 	num_fissions = draw_ecDNA_fission_number(*generator);
-
-			// 	//num_fissions = min((int)mother_ec_postFusion[j].size()-1 , num_fissions);
-
-
-			// 	// Determine where to partition the ecDNA 
-			// 	partition_prob = 1.0/(double)(mother_ec[j].size()-1);
-			// 	vector<int> partition_indices;
-			// 	current_loop_index = 0;
-			// 	while(1)
-			// 	{
-			// 		if (partition_indices.size() == num_fissions) break;
-			// 		//cout << "Finding " << num_fissions << " partitions for ecDNA " << mother_ec_postFusion[j] << ". current_loop_index=" << current_loop_index << ". partition_indices.size()=" << partition_indices.size() << endl;
-
-			// 		if ((drand48() < partition_prob) && (count(partition_indices.begin(), partition_indices.end(), current_loop_index) == 0)) partition_indices.push_back(current_loop_index);
-
-			// 		current_loop_index = (current_loop_index + 1)%(int)(mother_ec[j].size()-1);
-
-			// 	}
-
-
-			// 	// Sort partition indices in ascending order
-			// 	sort(partition_indices.begin(), partition_indices.end());
-
-			// 	// if (partition_indices.size() > 0)
-			// 	// {
-			// 	// 	cout << "Partition indices: ";
-			// 	// 	for (int j = 0; j < partition_indices.size(); ++j)
-			// 	// 	{
-			// 	// 		cout << partition_indices[j] << endl;
-			// 	// 	}
-			// 	// }
-
-
-
-			// 	partition_start = 0;
-			// 	for (int k = 0; k < partition_indices.size(); ++k)
-			// 	{
-			// 		// Separate ecDNA
-			// 		partition_end = partition_indices[k] + 1;
-			// 		new_ecDNA_postFission = "";
-			// 		for (int l = partition_start; l < partition_end; ++l) new_ecDNA_postFission += mother_ec[j][l];
-
-			// 		// Add separted ecDNA to new vector
-			// 		mother_ec_postFissionAndFusion.push_back(new_ecDNA_postFission);
-
-
-			// 		partition_start = partition_indices[k] + 1;
-			// 	}
-
-
-			// 	partition_end = mother_ec[j].size();
-			// 	new_ecDNA_postFission = "";
-			// 	for (int k = partition_start; k < partition_end; ++k) new_ecDNA_postFission += mother_ec[j][k];
-
-			// 	// Add separted ecDNA to new vector
-			// 	mother_ec_postFissionAndFusion.push_back(new_ecDNA_postFission);
-
-
-
-			// }
-
-
-
-
-
-			
-
-
-
-			// cout << "Mother cell ecDNA (after fission): ";
-			// for (int j = 0; j < mother_ec_postFissionAndFusion.size(); ++j)
-			// {
-			// 	cout << mother_ec_postFissionAndFusion[j] << ", ";
-			// }
-			// cout << endl;
 
 
 
@@ -532,25 +404,6 @@ void cell_division(vector<Cell> &tissue , double *total_unnormalised_division_ra
 				}
 			}
 
-
-			// cout << "Daughter 1 cell ecDNA: ";
-			// for (int j = 0; j < daughter_1_ec.size(); ++j)
-			// {
-			// 	cout << daughter_1_ec[j] << ", ";
-			// }
-			// cout << endl;
-
-
-
-			// cout << "Daughter 2 cell ecDNA: ";
-			// for (int j = 0; j < daughter_2_ec.size(); ++j)
-			// {
-			// 	cout << daughter_2_ec[j] << ", ";
-			// }
-			// cout << endl;
-
-
-		
 
 
 			// Create daughter cells
@@ -686,19 +539,6 @@ void parse_command_line_arguments(int argc, char** argv , bool *verbose_flag , i
 			break;
 
 
-		// // a parameter for sigmoid fitness function
-		// case 'a':
-		// 	*sigmoid_a = atof(optarg);
-		// 	break;
-
-
-		// // b parameter for sigmoid fitness function
-		// case 'b':
-		// 	*sigmoid_b = atof(optarg);
-		// 	break;
-
-
-
 		// parameter defining probability of ecDNA fusing 
 		case 'p':
 			*fusion_probability = atof(optarg);
@@ -758,11 +598,6 @@ void parse_command_line_arguments(int argc, char** argv , bool *verbose_flag , i
 		exit(0);
 	}
 
-	// if (*sigmoid_a >= *sigmoid_b)
-	// {
-	// 	cout << "Must have a < b. Exiting..." << endl;
-	// 	exit(0);
-	// }
 }
 
 
@@ -829,19 +664,6 @@ vector<Cell> initialise_tissue(int Nmax , int initial_cell_number , double *tota
 void compute_normalised_birth_and_death_rates(int Ntot , int N_ecDNA_hot , double total_unnormalised_division_rate , double total_unnormalised_death_rate , double *r_birth_normalised , double *r_death_normalised)
 {
 
-	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-	// Compute un-normalised reaction rates, constant death rate for all cells
-	//total_unnormalised_death_rate = 0.5*Ntot;
-	//total_unnormalised_death_rate = 0.0;
-
-	// If you want cell death to be proportional to cell birth rate, compute the line below and invoke cell_death() method
-	//total_unnormalised_death_rate = 0.5*total_unnormalised_division_rate;
-
-	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-
-
 	// Compute normalised reaction rates
 	*r_birth_normalised = total_unnormalised_division_rate/(total_unnormalised_division_rate + total_unnormalised_death_rate);
 	*r_death_normalised = total_unnormalised_death_rate/(total_unnormalised_division_rate + total_unnormalised_death_rate);
@@ -885,35 +707,6 @@ void choose_next_event(bool *BIRTH , bool *DEATH , double r_birth_normalised , d
 
 
 
-
-
-
-
-//-----------------------
-
-
-
-
-
-
-
-// // Kill cell and remove from lattice
-// void kill_cell(vector<Cell> &tissue , int *Ntot , int *N_ecDNA_hot , double *total_unnormalised_division_rate)
-// {
-
-// 	// Randomly select one cell to die (uniform probability)
-// 	dying_cell_index = round((drand48() * (*Ntot)) - 0.5);
-
-	
-// 	// Book-keeping
-// 	if (tissue[dying_cell_index].ecDNA > 0) *N_ecDNA_hot -= 1;
-// 	*total_unnormalised_division_rate -= tissue[dying_cell_index].division_rate;
-
-// 	// Cell dies. Replace with last cell in tissue vector so that all vector indices from 0 to Ntot-1 are occupied by cells
-// 	tissue[dying_cell_index] = Cell(tissue[*Ntot-1].ecDNA);
-// 	*Ntot -= 1;
-
-// }
 
 
 
@@ -986,8 +779,8 @@ int main(int argc, char** argv)
 	}
 
 
-	cout << "Outputs for " << argv[0] << " -n " << Nmax << " -n_replate " << resampling_number << " -k " << initial_copyNumber << " -s " << selection_coeff << " -A " << sigmoid_a << " -B " << sigmoid_b << " -C " << ecDNA_size_multiplier_factor << " -p " << fusion_probability << " -q " << fission_probability << " -x " << seed << endl;
-	cerr << "Errors for " << argv[0] << " -n " << Nmax << " -n_replate " << resampling_number << " -k " << initial_copyNumber << " -s " << selection_coeff << " -A " << sigmoid_a << " -B " << sigmoid_b << " -C " << ecDNA_size_multiplier_factor << " -p " << fusion_probability << " -q " << fission_probability << " -x " << seed << endl;
+	cout << "Outputs for " << argv[0] << " -n " << Nmax << " -n_replate " << resampling_number << " -k " << initial_copyNumber << " -s " << selection_coeff << " -a " << sigmoid_a << " -b " << sigmoid_b << " -c " << ecDNA_size_multiplier_factor << " -p " << fusion_probability << " -q " << fission_probability << " -x " << seed << endl;
+	cerr << "Errors for " << argv[0] << " -n " << Nmax << " -n_replate " << resampling_number << " -k " << initial_copyNumber << " -s " << selection_coeff << " -a " << sigmoid_a << " -b " << sigmoid_b << " -c " << ecDNA_size_multiplier_factor << " -p " << fusion_probability << " -q " << fission_probability << " -x " << seed << endl;
 
 
 	// Seed random number generator
@@ -1031,29 +824,12 @@ int main(int argc, char** argv)
 
 
 
-			// Timestamp for simulation optimisation purposes
-			//clock_t iter_start_time, iter_end_time;
-
-			//iter_start_time = clock();
-
-			//if (iter == 20) exit(0);
-
-			//cout << "---- iter = " << iter << " ---------- n_ecDNA_hot = " << N_ecDNA_hot << " ----------------------------" << endl;
-
-			
 			++iter;
 
 
 
 			// For logistic growth, modulate all death rates according to distance from carrying capacity (which is Nmax)
-			//total_unnormalised_death_rate_logisticRescaled = total_unnormalised_death_rate + ((total_unnormalised_division_rate - total_unnormalised_death_rate) * (sqrt((double)Ntot/(double)Nmax)));
 			total_unnormalised_division_rate_logisticRescaled = total_unnormalised_division_rate - ((total_unnormalised_division_rate - total_unnormalised_death_rate) * (sqrt((double)Ntot/(double)Nmax)));
-
-
-
-			//cout << "Ntot = " << Ntot << ", Nmax = " << Nmax << " | Death rescaled " << total_unnormalised_death_rate << " -> " << total_unnormalised_death_rate_logisticRescaled << " | Total birth rate minus death rate per cell = " << (total_unnormalised_division_rate-total_unnormalised_death_rate_logisticRescaled)/(double)Ntot << endl;
-
-
 
 
 
@@ -1082,9 +858,6 @@ int main(int argc, char** argv)
 			// If death:
 			if ((DEATH) && (Ntot > 1))
 			{
-				// Cell dies (if constant death rate used)
-				//kill_cell(tissue , &Ntot , &N_ecDNA_hot , &total_unnormalised_division_rate);
-
 				// Cell dies (if CN dependent death rate used)
 				cell_death(tissue , &total_unnormalised_division_rate , &total_unnormalised_death_rate , &Ntot , &N_ecDNA_hot , &generator);
 			}
@@ -1097,48 +870,10 @@ int main(int argc, char** argv)
 
 			if (iter%100000 == 0)
 			{			
-				//cout << t << "," << Ntot << endl; 
-
 				if (verbose_flag) cout << "Iteration #" << iter << " -- N = " << Ntot << " -- N_ecDNA_hot = " << N_ecDNA_hot << " -- total time = " << t << " days --  time at confluency = " << time_at_confluency << endl;
 			
 				// If all ecDNA lost from population, exit Gillespie loop and write output data
-				if (N_ecDNA_hot == 0)
-				{
-					//if (repeat%10 == 0)
-					//{
-						// stringstream f;
-						// f.str("");
-						// f << "./RESULTS/Nmax=" << Nmax << "_k=" << initial_copyNumber << "_s=" << selection_coeff << "_A=" << sigmoid_a << "_B=" << sigmoid_b << "_C=" << ecDNA_size_multiplier_factor << "_p=" << fusion_probability << "_q=" << fission_probability << "/seed=" << seed;
-						// DIR *dir = opendir(f.str().c_str());
-						// if(!dir)
-						// {
-						// 	f.str("");
-						// 	f << "mkdir -p ./RESULTS/Nmax=" << Nmax << "_k=" << initial_copyNumber << "_s=" << selection_coeff << "_A=" << sigmoid_a << "_B=" << sigmoid_b << "_C=" << ecDNA_size_multiplier_factor << "_p=" << fusion_probability << "_q=" << fission_probability << "/seed=" << seed;
-						// 	system(f.str().c_str());
-						// }
-
-						// ofstream tissue_file;
-						// f.str("");
-						// f << "./RESULTS/Nmax=" << Nmax << "_k=" << initial_copyNumber << "_s=" << selection_coeff << "_A=" << sigmoid_a << "_B=" << sigmoid_b << "_C=" << ecDNA_size_multiplier_factor << "_p=" << fusion_probability << "_q=" << fission_probability << "/seed=" << seed << "/tissue_resample" << repeat <<".csv";
-						// tissue_file.open(f.str().c_str());
-
-
-						// if (verbose_flag) cout << " " << endl;
-						// if (verbose_flag) cout << "Created output files..." << endl;
-
-
-						// // Loop over all cells 
-						// for (int i = 0; i < tissue.size(); ++i)
-						// {
-							
-						// 	tissue_file << "," << endl;
-							
-						// }
-					//}
-
-
-					exit(0);
-				}
+				if (N_ecDNA_hot == 0) exit(0);
 			}
 
 
