@@ -29,7 +29,7 @@ using namespace std;
 
 // Define global variables
 int seed, initial_copyNumber, Ntot, N_ecDNA_hot, iter, doubled_ecDNA_copyNumber, dying_cell_index, daughter_ecDNA_copyNumber1, daughter_ecDNA_copyNumber2, daughter_1_current_index, daughter_2_current_index, Nmax, occupancy, max_ecDNA_size, number_of_oncogenes, num_fusions, num_fissions, current_loop_index, partition_start, partition_end, ecDNA_count, cellStartingCopyNumber;
-double t, dt, time_at_confluency, r_birth_normalised, r_death_normalised, total_unnormalised_division_rate, total_unnormalised_death_rate, total_unnormalised_division_rate_logisticRescaled, rand_double, cumulative_division_rate , cumulative_death_rate, selection_coeff, sigmoid_a, sigmoid_b, ec_length_sum, x1, x2, x3, x4, ecDNA_size_multiplier, ecDNA_size_multiplier_factor, fusion_probability, fission_probability, partition_prob, base_rate;
+double t, dt, time_at_confluency, r_birth_normalised, r_death_normalised, total_unnormalised_division_rate, total_unnormalised_death_rate, total_unnormalised_division_rate_logisticRescaled, rand_double, cumulative_division_rate , cumulative_death_rate, selection_coeff, sigmoid_n, sigmoid_m, ec_length_sum, x1, x2, x3, x4, ecDNA_size_multiplier, ecDNA_size_multiplier_factor, fusion_probability, fission_probability, partition_prob, base_rate;
 bool verbose_flag, BIRTH, DEATH, added_to_occupancy_vector, allocated_to_daughter_1, counted;
 string new_ecDNA_postFusion, new_ecDNA_postFission;
 vector<string> daughter_1_ec, daughter_2_ec, mother_ec;
@@ -92,16 +92,16 @@ class Cell
 			{
 				this->division_rate = base_rate;
 			}
-			else if (number_of_oncogenes >= sigmoid_b)
+			else if (number_of_oncogenes >= sigmoid_m)
 			{
 				this->division_rate = (1.0 + selection_coeff) * base_rate;
 			}
 			else
 			{
 				x1 = selection_coeff;
-				x2 = 1.0 + ((sigmoid_b - (double)number_of_oncogenes)/(sigmoid_b - sigmoid_a));
-				x3 = ((double)number_of_oncogenes / sigmoid_b);
-				x4 = (sigmoid_b / (sigmoid_b - sigmoid_a));
+				x2 = 1.0 + ((sigmoid_m - (double)number_of_oncogenes)/(sigmoid_m - sigmoid_n));
+				x3 = ((double)number_of_oncogenes / sigmoid_m);
+				x4 = (sigmoid_m / (sigmoid_m - sigmoid_n));
 
 				this->division_rate = (1.0 + (x1 * x2 * (pow(x3 , x4)))) * base_rate;
 			}
@@ -177,34 +177,34 @@ class Occupancy
 
 
 
-// Define a tuple for iterting over A and B pairs 
+// Define a tuple for iterting over n and m parameter pairs 
 class Pair
 {
 	public:
-		double a;
-		double b;
+		double n;
+		double m;
 
 		
 		Pair()
 		{
-			set_a(0.0);
-			set_b(0.0);
+			set_n(0.0);
+			set_m(0.0);
 		}
 
 		Pair(double x , double y)
 		{
-			set_a(x);
-			set_b(y);
+			set_n(x);
+			set_m(y);
 		}
 
-		void set_a(double x)
+		void set_n(double x)
 		{
-			this->a = x;
+			this->n = x;
 		}
 
-		void set_b(double y)
+		void set_m(double y)
 		{
-			this->b = y;
+			this->m = y;
 		}
 
 
@@ -506,7 +506,7 @@ void parse_command_line_arguments(int argc, char** argv , bool *verbose_flag , i
 		{"verbose", no_argument, &verbose, 1},
 	}; 
 
-	while ((c = getopt_long(argc, argv, "x:n:k:s:a:b:p:q:c:", long_options, &option_index)) != -1)
+	while ((c = getopt_long(argc, argv, "x:N:k:s:p:q:l:", long_options, &option_index)) != -1)
 	switch (c)
 	{
 		case 0:
@@ -521,8 +521,8 @@ void parse_command_line_arguments(int argc, char** argv , bool *verbose_flag , i
 			break;
 
 
-		// Selection coefficient
-		case 'n':
+		// Maximum population size (carrying capacity)
+		case 'N':
 			*Nmax = atoi(optarg);
 			break;
 
@@ -553,7 +553,7 @@ void parse_command_line_arguments(int argc, char** argv , bool *verbose_flag , i
 
 
 		// ecDNA burden penalty
-		case 'c':
+		case 'l':
 			*ecDNA_size_multiplier_factor = atof(optarg);	
 			break;
 
@@ -752,19 +752,19 @@ int main(int argc, char** argv)
 
 
 	// Define list of A and B combinations to iterate over
-	vector<Pair> ab_pairs(6);
-	ab_pairs[0] = Pair(5,10);
-	ab_pairs[1] = Pair(10,20);
-	ab_pairs[2] = Pair(15,30);
-	ab_pairs[3] = Pair(25,50);
-	ab_pairs[4] = Pair(40,80);
-	ab_pairs[5] = Pair(60,120);
+	vector<Pair> nm_pairs(6);
+	nm_pairs[0] = Pair(5,10);
+	nm_pairs[1] = Pair(10,20);
+	nm_pairs[2] = Pair(15,30);
+	nm_pairs[3] = Pair(25,50);
+	nm_pairs[4] = Pair(40,80);
+	nm_pairs[5] = Pair(60,120);
 
 
 
 	// Set initial A and B parameters
-	sigmoid_a = ab_pairs[0].a;
-	sigmoid_b = ab_pairs[0].b;
+	sigmoid_n = nm_pairs[0].n;
+	sigmoid_m = nm_pairs[0].m;
 
 
 
@@ -779,8 +779,8 @@ int main(int argc, char** argv)
 	}
 
 
-	cout << "Outputs for " << argv[0] << " -n " << Nmax << " -n_replate " << resampling_number << " -k " << initial_copyNumber << " -s " << selection_coeff << " -a " << sigmoid_a << " -b " << sigmoid_b << " -c " << ecDNA_size_multiplier_factor << " -p " << fusion_probability << " -q " << fission_probability << " -x " << seed << endl;
-	cerr << "Errors for " << argv[0] << " -n " << Nmax << " -n_replate " << resampling_number << " -k " << initial_copyNumber << " -s " << selection_coeff << " -a " << sigmoid_a << " -b " << sigmoid_b << " -c " << ecDNA_size_multiplier_factor << " -p " << fusion_probability << " -q " << fission_probability << " -x " << seed << endl;
+	cout << "Outputs for " << argv[0] << " -N " << Nmax << " -N_replate " << resampling_number << " -k " << initial_copyNumber << " -s " << selection_coeff << " -n " << sigmoid_n << " -m " << sigmoid_m << " -l " << ecDNA_size_multiplier_factor << " -p " << fusion_probability << " -q " << fission_probability << " -x " << seed << endl;
+	cerr << "Errors for " << argv[0] << " -N " << Nmax << " -N_replate " << resampling_number << " -k " << initial_copyNumber << " -s " << selection_coeff << " -n " << sigmoid_n << " -m " << sigmoid_m << " -l " << ecDNA_size_multiplier_factor << " -p " << fusion_probability << " -q " << fission_probability << " -x " << seed << endl;
 
 
 	// Seed random number generator
@@ -802,11 +802,11 @@ int main(int argc, char** argv)
 	//================== Simulate tissue growth ==================//
 	iter = 0;
 
-	for (int repeat = 0; repeat < ab_pairs.size(); ++repeat)
+	for (int repeat = 0; repeat < nm_pairs.size(); ++repeat)
 	{
 		// Set new A and B parameters for fitness function
-		sigmoid_a = ab_pairs[repeat].a;
-		sigmoid_b = ab_pairs[repeat].b;
+		sigmoid_n = nm_pairs[repeat].n;
+		sigmoid_m = nm_pairs[repeat].m;
 
 
 		// Update birth rates and re-compute total unnormalised birth rates under new fitness curve
@@ -904,10 +904,10 @@ int main(int argc, char** argv)
 
 		stringstream f;
 		f.str("");
-		f << "./RESULTS/Nmax=" << Nmax << "_resampleSize=" << resampling_number << "_k=" << initial_copyNumber << "_s=" << selection_coeff << "_C=" << ecDNA_size_multiplier_factor << "_p=" << fusion_probability << "_q=" << fission_probability << "_Asequence=";
-		for (int i = 0; i < ab_pairs.size(); ++i) f << ab_pairs[i].a << "_";
-		f << "Bsequence=";
-		for (int i = 0; i < ab_pairs.size(); ++i) f << ab_pairs[i].b << "_";
+		f << "./RESULTS/Nmax=" << Nmax << "_resampleSize=" << resampling_number << "_k=" << initial_copyNumber << "_s=" << selection_coeff << "_l=" << ecDNA_size_multiplier_factor << "_p=" << fusion_probability << "_q=" << fission_probability << "_nsequence=";
+		for (int i = 0; i < nm_pairs.size(); ++i) f << nm_pairs[i].n << "_";
+		f << "msequence=";
+		for (int i = 0; i < nm_pairs.size(); ++i) f << nm_pairs[i].m << "_";
 		f << "seed=" << seed;
 
 
@@ -922,7 +922,7 @@ int main(int argc, char** argv)
 		}
 
 		ofstream tissue_file;
-		f << "/A=" << sigmoid_a  << "_B=" << sigmoid_b << "_tissue.csv";
+		f << "/n=" << sigmoid_n  << "_m=" << sigmoid_m << "_tissue.csv";
 		tissue_file.open(f.str().c_str());
 
 
