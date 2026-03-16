@@ -14,7 +14,7 @@ and run the simulations using the command
 where\
 &nbsp; --verbose &emsp;&emsp; verbose flag (optional)\
 &nbsp; -N &emsp;&emsp; maximum population size (in number of cells)\
-&nbsp; -k &emsp;&emsp; ecDNA copy number in initial cell\
+&nbsp; -k &emsp;&emsp; mean value of the initial ecDNA copy number ditsribution\
 &nbsp; -s &emsp;&emsp; selection strength. Scalar multiplier for the ecDNA dependent birth rate function, with s=0 giving rise to neutral growth and s>0 giving rise to positive ecDNA copy number dependent selection\
 &nbsp; -l &emsp;&emsp; ecDNA gene burden penalty\
 &nbsp; -p &emsp;&emsp; ecDNA fusion rate\
