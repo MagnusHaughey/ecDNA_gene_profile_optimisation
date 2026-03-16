@@ -31,6 +31,6 @@ where `m1_m2_m3...` is the sequence of m (mu) values specified in the `fitness_f
 Compute and plot gene colocalization and copy number data for the resulting files by executing
 
 ```
-python3 make_plots_increasingDrugConcentration.py
+python3 make_plots.py
 ```
 Manually edit the `all_m_sequences` list in `make_plots_increasingDrugConcentration.py` to match the desired nsequence of the raw data in ./RESULTS/. The code will iterate over all parameter combination corresponding to this sequence and plot colocalization and gene copy number data for each combination. Data is plotted in a new file in the ./PLOTS/ directory
