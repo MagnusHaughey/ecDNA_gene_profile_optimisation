@@ -25,7 +25,7 @@ Flags should be specified before numerical arguments.
 
 Data are written a directory named ./RESULTS/Nmax=`N`_resampleSize=20000_k=`k`_s=`s`_l=`l`_p=`p`_q=`q`_msequence=`m1_m2_m3...`_seed=`x`/m=`mi`_tissue.csv
 
-where `m1_m2_m3...` is the sequence m values specified in the `fitness_function_m_values` vector, `mi` is the `m` value of the serial passage to which the data relates.
+where `m1_m2_m3...` is the sequence of m (mu) values specified in the `fitness_function_m_values` vector, `mi` is the `m` value of the serial passage to which the data relates.
 
 
 Compute and plot gene colocalization and copy number data for the resulting files by executing
